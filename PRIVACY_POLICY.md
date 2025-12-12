@@ -54,7 +54,7 @@ Since all data is stored locally on your device, you have complete control over 
 
 If you have any questions about this privacy policy or our practices, please contact us at:
 
-**Email:** [Your Contact Email]
+**Email:** calebiker7@gmail.com
 
 ---
 
