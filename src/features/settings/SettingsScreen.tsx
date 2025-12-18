@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Switch, ScrollView } from 'react-native';
+import { View, TouchableOpacity, Switch, ScrollView, Platform } from 'react-native';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { AppText } from '../../components/common/AppText';
 import { Icon } from '../../components/common/Icon';
@@ -9,6 +9,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import { BackupService } from '../../services/backup/BackupService';
 import { useIOSAlert } from '../../components/modals/IOSAlert';
+import { AdMobService } from '../../services/ads/AdMobService';
 
 interface SettingsRowProps {
     icon: string;
@@ -102,6 +103,42 @@ export const SettingsScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [isExporting, setIsExporting] = useState(false);
     const { showAlert } = useIOSAlert();
+
+    const handleShowInterstitialAd = async () => {
+        try {
+            await AdMobService.showInterstitial();
+        } catch (error: any) {
+            console.error('Interstitial ad error:', error);
+            showAlert({
+                title: 'Ad Error',
+                message: error?.message || 'Failed to show interstitial ad.'
+            });
+        }
+    };
+
+    const handleShowRewardedAd = async () => {
+        try {
+            const reward = await AdMobService.showRewarded();
+            if (reward) {
+                showAlert({
+                    title: 'Reward Earned',
+                    message: `You earned ${reward.amount} ${reward.type}.`
+                });
+                return;
+            }
+
+            showAlert({
+                title: 'No Reward',
+                message: 'Ad closed before a reward was earned.'
+            });
+        } catch (error: any) {
+            console.error('Rewarded ad error:', error);
+            showAlert({
+                title: 'Ad Error',
+                message: error?.message || 'Failed to show rewarded ad.'
+            });
+        }
+    };
 
     const handleExportBackup = async () => {
         setIsExporting(true);
@@ -208,6 +245,26 @@ export const SettingsScreen = () => {
                         onPress={() => showAlert({ title: 'Thank You!', message: 'We appreciate your support!' })}
                     />
                 </SettingsSection>
+
+                {Platform.OS === 'android' && (
+                    <SettingsSection title="Ads">
+                        <SettingsRow
+                            icon="tv"
+                            title="Show Interstitial Ad"
+                            subtitle={__DEV__ ? 'Test ad' : 'Live ad'}
+                            iconColor="#007AFF"
+                            onPress={handleShowInterstitialAd}
+                        />
+                        <SettingsDivider />
+                        <SettingsRow
+                            icon="gift"
+                            title="Show Rewarded Ad"
+                            subtitle={__DEV__ ? 'Test ad' : 'Live ad'}
+                            iconColor="#34C759"
+                            onPress={handleShowRewardedAd}
+                        />
+                    </SettingsSection>
+                )}
             </ScrollView>
         </ScreenContainer>
     );
