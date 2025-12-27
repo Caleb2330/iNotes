@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "InoteClone",
+    "slug": "InoteClone",
+    "version": "1.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.inoteclone"
+    },
+    "react-native-google-mobile-ads": {
+      "android_app_id": "ca-app-pub-3826884259673002~2698487898"
+    }
+  }
+}

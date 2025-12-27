@@ -1,0 +1,34 @@
+buildscript {
+    ext {
+        buildToolsVersion = "36.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 36
+        targetSdkVersion = 36
+        ndkVersion = "29.0.14206865"
+        kotlinVersion = "2.1.20"
+    }
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://maven.swmansion.com/repository/public' }
+        maven { url 'https://www.jitpack.io' }
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        // classpath 'com.swmansion.reanimated:react-native-reanimated-gradle-plugin:3.16.1'
+    }
+}
+
+apply plugin: "com.facebook.react.rootproject"
+
+subprojects { subproject ->
+    if (subproject.hasProperty("android")) {
+        subproject.android {
+            ndkVersion = rootProject.ext.ndkVersion
+        }
+    }
+}
+
+// apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
