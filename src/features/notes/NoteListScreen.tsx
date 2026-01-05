@@ -25,6 +25,7 @@ export const NoteListScreen = () => {
     const { folderId, searchQuery: initialSearchQuery } = route.params || {};
     const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '');
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+    const [sortBy, setSortBy] = useState<'updated' | 'created' | 'title' | 'pinned'>('updated');
     const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
     const loadNotes = async () => {
@@ -59,14 +60,30 @@ export const NoteListScreen = () => {
                 fetched = fetched.filter(n => !n.archived);
             }
         }
-        setNotes(fetched);
+        // Apply sorting client-side
+        const sorted = [...fetched].sort((a, b) => {
+            // pinned sort always primary when sortBy is 'pinned'
+            if (sortBy === 'pinned') {
+                if (a.pinned !== b.pinned) return b.pinned ? 1 : -1;
+                return (b.updatedAt || 0) - (a.updatedAt || 0);
+            }
+            if (sortBy === 'title') {
+                return (a.title || '').localeCompare(b.title || '');
+            }
+            if (sortBy === 'created') {
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            }
+            // default updated
+            return (b.updatedAt || 0) - (a.updatedAt || 0);
+        });
+        setNotes(sorted);
     };
 
     // Load notes when screen is focused or search/folder changes
     useFocusEffect(
         useCallback(() => {
             loadNotes();
-        }, [folderId, debouncedSearchQuery])
+        }, [folderId, debouncedSearchQuery, sortBy])
     );
 
     const getScreenTitle = () => {
@@ -75,6 +92,22 @@ export const NoteListScreen = () => {
         if (folderId === 'pinned') return 'Pinned';
         if (folderId) return 'Folder Notes';
         return 'All Notes';
+    };
+
+    const cycleSort = () => {
+        setSortBy((prev) => {
+            if (prev === 'updated') return 'created';
+            if (prev === 'created') return 'title';
+            if (prev === 'title') return 'pinned';
+            return 'updated';
+        });
+    };
+
+    const sortLabel = () => {
+        if (sortBy === 'updated') return 'Updated ↓';
+        if (sortBy === 'created') return 'Created ↓';
+        if (sortBy === 'title') return 'Title A→Z';
+        return 'Pinned first';
     };
 
     const handleBack = () => {
@@ -118,6 +151,26 @@ export const NoteListScreen = () => {
 
             <View style={{ paddingHorizontal: 16, marginBottom: 8 }}>
                 <AppText size="title1" weight="bold" style={{ fontSize: 34 }}>{getScreenTitle()}</AppText>
+            </View>
+
+            {/* Sort control */}
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 16, marginBottom: 8 }}>
+                <TouchableOpacity
+                    onPress={cycleSort}
+                    style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 6,
+                        paddingHorizontal: 10,
+                        borderRadius: 8,
+                        backgroundColor: colors.surface,
+                        borderWidth: 0.5,
+                        borderColor: colors.border,
+                    }}
+                >
+                    <Icon name="swap-vertical" size={18} color={colors.primary} />
+                    <AppText style={{ marginLeft: 6 }}>{sortLabel()}</AppText>
+                </TouchableOpacity>
             </View>
 
             {/* Search Bar */}

@@ -8,6 +8,7 @@ export const SCHEMA_V1 = [
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     color TEXT,
+    parentId TEXT,
     orderIndex INTEGER DEFAULT 0,
     createdAt INTEGER NOT NULL,
     updatedAt INTEGER NOT NULL
@@ -27,6 +28,9 @@ export const SCHEMA_V1 = [
     updatedAt INTEGER NOT NULL,
     FOREIGN KEY(folderId) REFERENCES ${TABLE_FOLDERS}(id) ON DELETE SET NULL
   );`,
+
+    // Migration for existing databases to add parentId to folders (subfolders)
+    `ALTER TABLE ${TABLE_FOLDERS} ADD COLUMN parentId TEXT;`,
 
     // Migration for existing databases to add fontFamily
     `ALTER TABLE ${TABLE_NOTES} ADD COLUMN fontFamily TEXT;`,

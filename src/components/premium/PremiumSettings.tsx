@@ -11,19 +11,19 @@ interface PremiumSettingsProps {
 
 export const PremiumSettings: React.FC<PremiumSettingsProps> = ({ onClose }) => {
   const { colors } = useTheme();
-  const { isPremium, isLoading, products, purchaseInProgress, purchaseRemoveAds } = useBilling();
+  const { isPremium, isLoading, subscriptions, purchaseInProgress, purchaseSubscription } = useBilling();
 
   const handlePurchasePress = async () => {
     if (purchaseInProgress) return;
     
     try {
-      await purchaseRemoveAds();
+      await purchaseSubscription();
     } catch (error: any) {
-      Alert.alert('Error', 'Failed to process purchase. Please try again.');
+      Alert.alert('Error', 'Failed to process subscription. Please try again.');
     }
   };
 
-  const removeAdsProduct = products.find((p: any) => p.productId === 'remove_ads_premium_monthly');
+  const removeAdsSubscription = subscriptions.find((s: any) => s.productId === 'remove_ads_premium_monthly');
 
   if (isLoading) {
     return (
@@ -74,7 +74,7 @@ export const PremiumSettings: React.FC<PremiumSettingsProps> = ({ onClose }) => 
               Enjoy an ad-free experience with monthly subscription. Cancel anytime.
             </AppText>
 
-            {removeAdsProduct && (
+            {removeAdsSubscription && (
               <TouchableOpacity
                 onPress={handlePurchasePress}
                 disabled={purchaseInProgress}
@@ -99,7 +99,7 @@ export const PremiumSettings: React.FC<PremiumSettingsProps> = ({ onClose }) => 
                   <>
                     <Icon name="cart" size={20} color="#FFFFFF" />
                     <AppText style={{ color: '#FFFFFF', marginLeft: 8, fontWeight: 'bold' }}>
-                      Subscribe - {removeAdsProduct.localizedPrice}
+                      Subscribe - {removeAdsSubscription.localizedPrice}
                     </AppText>
                   </>
                 )}

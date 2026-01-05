@@ -4,25 +4,28 @@ import { TABLE_FOLDERS } from '../../core/db/schema';
 
 export class FolderRepository {
     async getAll(): Promise<Folder[]> {
-        const results = await dbService.getAllAsync<Folder>(`SELECT * FROM ${TABLE_FOLDERS} ORDER BY orderIndex ASC, createdAt DESC`);
+        const results = await dbService.getAllAsync<Folder>(
+            `SELECT * FROM ${TABLE_FOLDERS} ORDER BY orderIndex ASC, createdAt DESC`
+        );
         return results;
     }
 
-    async create(name: string, color?: string): Promise<Folder> {
+    async create(name: string, color?: string, parentId?: string | null): Promise<Folder> {
         const id = Date.now().toString(); // Simple ID generation
         const now = Date.now();
         const folder: Folder = {
             id,
             name,
             color,
+            parentId: parentId ?? null,
             orderIndex: 0,
             createdAt: now,
             updatedAt: now,
         };
 
         await dbService.runAsync(
-            `INSERT INTO ${TABLE_FOLDERS} (id, name, color, orderIndex, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)`,
-            [folder.id, folder.name, folder.color || null, folder.orderIndex, folder.createdAt, folder.updatedAt]
+            `INSERT INTO ${TABLE_FOLDERS} (id, name, color, parentId, orderIndex, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [folder.id, folder.name, folder.color || null, folder.parentId, folder.orderIndex, folder.createdAt, folder.updatedAt]
         );
 
         return folder;
