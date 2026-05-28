@@ -105,40 +105,37 @@ export const SettingsScreen = () => {
     const [isExporting, setIsExporting] = useState(false);
     const { showAlert } = useIOSAlert();
 
-    const handleShowInterstitialAd = async () => {
-        try {
-            await AdMobService.showInterstitial();
-        } catch (error: any) {
-            console.error('Interstitial ad error:', error);
-            showAlert({
-                title: 'Ad Error',
-                message: error?.message || 'Failed to show interstitial ad.'
-            });
-        }
-    };
-
-    const handleShowRewardedAd = async () => {
-        try {
-            const reward = await AdMobService.showRewarded();
-            if (reward) {
-                showAlert({
-                    title: 'Reward Earned',
-                    message: `You earned ${reward.amount} ${reward.type}.`
-                });
-                return;
-            }
-
-            showAlert({
-                title: 'No Reward',
-                message: 'Ad closed before a reward was earned.'
-            });
-        } catch (error: any) {
-            console.error('Rewarded ad error:', error);
-            showAlert({
-                title: 'Ad Error',
-                message: error?.message || 'Failed to show rewarded ad.'
-            });
-        }
+    // Opt-in rewarded ad with a real value exchange: the user watches a
+    // short video and gets a 24-hour ad-free window. The confirmation
+    // dialog below is required by AdMob policy — the user must understand
+    // the reward and explicitly agree BEFORE the ad loads.
+    const handleEarnAdFreeTime = () => {
+        showAlert({
+            title: 'Earn 24 Hours Ad-Free',
+            message: 'Watch a short video to remove ads for the next 24 hours. You can do this again whenever it expires.',
+            buttons: [
+                { text: 'Not Now', style: 'cancel' },
+                {
+                    text: 'Watch Video',
+                    style: 'default',
+                    onPress: async () => {
+                        const reward = await AdMobService.showRewarded();
+                        if (reward) {
+                            AdMobService.grantTemporaryAdFree();
+                            showAlert({
+                                title: 'You\'re Ad-Free!',
+                                message: 'Enjoy 24 hours without ads. Thanks for supporting the app.'
+                            });
+                        } else {
+                            showAlert({
+                                title: 'Ad Not Available',
+                                message: 'We couldn\'t load a video right now. Please try again in a moment.'
+                            });
+                        }
+                    }
+                }
+            ]
+        });
     };
 
     const handleExportBackup = async () => {
@@ -250,21 +247,13 @@ export const SettingsScreen = () => {
                 </SettingsSection>
 
                 {Platform.OS === 'android' && (
-                    <SettingsSection title="Ads">
-                        <SettingsRow
-                            icon="tv"
-                            title="Show Interstitial Ad"
-                            subtitle={__DEV__ ? 'Test ad' : 'Live ad'}
-                            iconColor="#007AFF"
-                            onPress={handleShowInterstitialAd}
-                        />
-                        <SettingsDivider />
+                    <SettingsSection title="Rewards">
                         <SettingsRow
                             icon="gift"
-                            title="Show Rewarded Ad"
-                            subtitle={__DEV__ ? 'Test ad' : 'Live ad'}
+                            title="Earn 24h Ad-Free"
+                            subtitle="Watch a short video to remove ads for 24 hours"
                             iconColor="#34C759"
-                            onPress={handleShowRewardedAd}
+                            onPress={handleEarnAdFreeTime}
                         />
                     </SettingsSection>
                 )}

@@ -278,8 +278,6 @@ export const NoteListScreen = () => {
                 <TouchableOpacity
                     style={{ flex: 1, alignItems: 'flex-end' }}
                     onPress={() => {
-                        const { AdMobService } = require('../../services/ads/AdMobService');
-                        AdMobService.showRewarded();
                         navigation.navigate('NoteDetail', { noteId: undefined });
                     }}
                 >

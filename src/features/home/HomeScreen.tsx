@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, FlatList, TouchableOpacity, TextInput } from 'react-native';
 import { ScreenContainer } from '../../components/common/ScreenContainer';
 import { AppText } from '../../components/common/AppText';
@@ -11,7 +11,6 @@ import { FolderRepository } from '../folders/FolderRepository';
 import { NoteRepository } from '../notes/NoteRepository';
 import { Folder } from '../folders/types';
 import { TextInputModal } from '../../components/modals/TextInputModal';
-import { AdMobService } from '../../services/ads/AdMobService';
 
 interface FolderWithCount extends Folder {
     noteCount: number;
@@ -63,21 +62,9 @@ export const HomeScreen = () => {
         loadData();
     };
 
-    useEffect(() => {
-        // Show interstitial ad when component first mounts (after onboarding)
-        setTimeout(() => {
-            AdMobService.showInterstitial().catch(console.error);
-        }, 1000);
-    }, []);
-
     useFocusEffect(
         useCallback(() => {
             loadData();
-            // Show interstitial ad when user returns to home screen
-            // Add a small delay to ensure the screen is fully loaded
-            setTimeout(() => {
-                AdMobService.showInterstitial().catch(console.error);
-            }, 500);
         }, [])
     );
 

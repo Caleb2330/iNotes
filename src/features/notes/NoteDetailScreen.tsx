@@ -26,6 +26,7 @@ import { RichTextToolbar } from '../../components/RichTextToolbar';
 import { ShareService } from '../../services/share/ShareService';
 import { useIOSAlert } from '../../components/modals/IOSAlert';
 import { LinkInputModal } from '../../components/modals/LinkInputModal';
+import { AdMobService } from '../../services/ads/AdMobService';
 
 type NoteDetailRouteProp = RouteProp<RootStackParamList, 'NoteDetail'>;
 
@@ -178,6 +179,10 @@ export const NoteDetailScreen = () => {
             // Save asynchronously
             await handleSave(true);
 
+            // System back / swipe gesture is also a natural transition point.
+            AdMobService.recordUserAction();
+            AdMobService.maybeShowInterstitialAtTransition('note-back-gesture');
+
             // Manually dispatch the action to continue navigation
             // We set isSavingRef to true to prevent the listener from blocking again
             isSavingRef.current = true;
@@ -235,6 +240,13 @@ export const NoteDetailScreen = () => {
             }
 
             if (!silent) {
+                // The user explicitly hit Back — this is a natural transition
+                // point. Count it as a meaningful action and let AdMobService
+                // decide (frequency cap / cold-start guard / premium) whether
+                // to actually show an interstitial. Fire-and-forget so the
+                // navigation isn't blocked.
+                AdMobService.recordUserAction();
+                AdMobService.maybeShowInterstitialAtTransition('note-saved-exit');
                 navigation.goBack();
             }
             return true;
@@ -262,6 +274,8 @@ export const NoteDetailScreen = () => {
                     onPress: async () => {
                         isDeletingRef.current = true;
                         await noteRepo.delete(noteId);
+                        AdMobService.recordUserAction();
+                        AdMobService.maybeShowInterstitialAtTransition('note-deleted');
                         navigation.goBack();
                     }
                 }
@@ -509,9 +523,7 @@ export const NoteDetailScreen = () => {
                         <Icon name="text" size={26} color={colors.textSecondary} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => {
-                        const { AdMobService } = require('../../services/ads/AdMobService');
-                        AdMobService.showRewarded();
-                        handleSave().then(() => {
+                        handleSave(true).then(() => {
                             navigation.push('NoteDetail', { noteId: undefined });
                         });
                     }}>
